@@ -12,21 +12,22 @@ import (
 
 var fortunes = []string{"大吉", "中吉", "小吉", "凶", "大凶"}
 
-type fortune struct {
-	Result string
+type Handler struct {
+	Time time.Time
 }
 
-func draw() string {
-	return fortunes[rand.Intn(len(fortunes))]
+type fortune struct {
+	Result string
+	time   time.Time
 }
 
 func init() {
 	rand.Seed(time.Now().UnixNano())
 }
-func Handler(w http.ResponseWriter, r *http.Request) {
-	f := fortune{
-		Result: draw(),
-	}
+
+func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	f := fortune{time: h.Time}
+	f.draw()
 
 	var buf bytes.Buffer
 	enc := json.NewEncoder(&buf)
@@ -35,4 +36,20 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Fprint(w, buf.String())
+}
+
+func (f *fortune) draw() {
+	if f.isBeginningOfTheYear() {
+		f.Result = fortunes[0]
+		return
+	}
+	f.Result = fortunes[rand.Intn(len(fortunes))]
+}
+
+func (f fortune) isBeginningOfTheYear() bool {
+	if f.time.Month() == 1 && f.time.Day() <= 3 {
+		return true
+	}
+
+	return false
 }
