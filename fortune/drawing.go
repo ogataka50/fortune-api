@@ -18,7 +18,10 @@ type Handler struct {
 
 type fortune struct {
 	Result string
-	time   time.Time
+}
+
+type drawing struct {
+	time time.Time
 }
 
 func init() {
@@ -26,8 +29,8 @@ func init() {
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f := fortune{time: h.Time}
-	f.draw()
+	d := drawing{time: h.Time}
+	f := fortune{Result: d.draw()}
 
 	var buf bytes.Buffer
 	enc := json.NewEncoder(&buf)
@@ -38,16 +41,15 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, buf.String())
 }
 
-func (f *fortune) draw() {
-	if f.isBeginningOfTheYear() {
-		f.Result = fortunes[0]
-		return
+func (d drawing) draw() string {
+	if d.isBeginningOfTheYear() {
+		return fortunes[0]
 	}
-	f.Result = fortunes[rand.Intn(len(fortunes))]
+	return fortunes[rand.Intn(len(fortunes))]
 }
 
-func (f fortune) isBeginningOfTheYear() bool {
-	if f.time.Month() == 1 && f.time.Day() <= 3 {
+func (d drawing) isBeginningOfTheYear() bool {
+	if d.time.Month() == 1 && d.time.Day() <= 3 {
 		return true
 	}
 
